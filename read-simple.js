@@ -14,8 +14,9 @@ var rl = readline.createInterface({
 
 var sheng_code = 10,
   shi_code = 0,
-  xian_code = 0，
-  flag_zxs = false;
+  xian_code = 0,
+  flag = false,
+  temp = '';
 
 rl.on('line', function(line) {
   var arr = line.split(/\s+/);
@@ -23,27 +24,31 @@ rl.on('line', function(line) {
   var shi = arr[0].substring(2, 4);
   var xian = arr[0].substring(4);
 
-  if (u.indexOf(['北京市', '上海市', '天津市', '重庆市'], arr[1]) != -1) {
-    flag_zxs = true;
-  } else {
-    flag_zxs = false;
-  }
-
-  if (flag_zxs && xian === '00') {
-    return;
-  }
-
-  if (!flag_zxs && xian === '01') {
-    return;
-  }
-
   if (shi === '00' && xian === '00') {
     sheng_code++;
     shi_code = 0;
     xian_code = 0;
+    if (u.indexOf(['北京市', '上海市', '天津市', '重庆市'], arr[1]) != -1) {
+      flag = true;
+    } else {
+      flag = false;
+    }
+  }
+
+  if (flag && shi != '00' && xian === '00') {
+    temp = ''
+    return;
+  }
+
+  if (!flag && xian === '01' && temp != (sheng + shi)) {
+    return;
   }
 
   if (shi != '00' && xian === '00') {
+    if (arr[1] === '省直辖县级行政区划') {
+      temp = sheng + shi;
+      return
+    };
     shi_code++;
     xian_code = 0;
   }
@@ -52,16 +57,18 @@ rl.on('line', function(line) {
     xian_code++;
   }
 
+  if (temp === (sheng + shi)) {
+    shi_code++;
+    xian_code = 0;
+  };
+
   shi_code_str = shi_code >= 10 ? shi_code : '0' + shi_code;
   xian_code_str = xian_code >= 10 ? xian_code : '0' + xian_code;
 
-  outstream.write(sheng_code + shi_code_str + xian_code_str + '      ' + arr[1] + '\n');
+  if (flag) {
+    shi_code_str = '';
+  };
 
-
-  if (u.indexOf(['北京市', '上海市', '天津市', '重庆市'], arr[1]) != -1) {
-    // console.log(arr[1]);
-  } else {
-    // i>=10?i:'0'+i
-  }
+  outstream.write('' + sheng_code + shi_code_str + xian_code_str + '      ' + arr[1] + '\n');
 
 });
